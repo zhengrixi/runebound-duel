@@ -1,0 +1,248 @@
+/* Runebound Duel — a lamplit tavern table: dark green felt, old gold trim,
+   parchment cards. Suits are told apart by colour and by shape. */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background:
+    radial-gradient(1200px 700px at 50% 38%, #356144 0%, #24452f 46%, #14251a 100%);
+  color: #f5ecd7;
+  overflow: hidden;
+  user-select: none;
+}
+
+#app { height: 100vh; display: flex; flex-direction: column; position: relative; }
+
+.icon { width: 1em; height: 1em; fill: currentColor; display: inline-block; vertical-align: -0.12em; }
+
+/* ---------- HUD ---------- */
+.hud {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 22px; font-size: 17px; letter-spacing: 0.04em;
+  background: linear-gradient(#00000055, #00000000);
+}
+.hud-title {
+  font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-weight: 700; font-size: 21px; color: #f2c14e; letter-spacing: 0.22em;
+  text-shadow: 0 2px 8px #000;
+}
+.hud b { color: #f2c14e; font-size: 20px; }
+
+/* ---------- Table layout ---------- */
+.table { flex: 1; display: flex; flex-direction: column; padding: 2px 26px 10px; }
+
+.foe-zone { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.foe-hand { display: flex; gap: 6px; min-height: 56px; align-items: flex-start; }
+.foe-main { display: flex; align-items: center; gap: 20px; }
+.foe-facts { min-width: 380px; }
+.pile { text-align: center; font-size: 13px; color: #cdbf9d; line-height: 1.25; }
+.pile b { font-size: 20px; color: #f5ecd7; }
+.pile.slim { font-size: 14px; }
+.foe-pile { margin-left: 6px; }
+
+.fighter-name {
+  font-family: Palatino, "Palatino Linotype", Georgia, serif;
+  font-size: 24px; font-weight: 700; color: #fff3d6; text-shadow: 0 2px 6px #000;
+}
+.fighter-title { font-size: 16px; font-weight: 400; font-style: italic; color: #d8c9a3; }
+
+.portrait {
+  width: 88px; height: 88px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #ffffff33, transparent 55%), var(--tint, #5a4632);
+  border: 4px solid #f2c14e; box-shadow: 0 6px 18px #000a, inset 0 0 24px #0007;
+  color: #ffe9b0; flex: none;
+}
+.portrait .icon { width: 46px; height: 46px; }
+.me-portrait { --tint: #2d5a50; }
+.portrait.shake { animation: shake 0.4s ease; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-9px) rotate(-2deg); }
+  45% { transform: translateX(8px) rotate(2deg); }
+  70% { transform: translateX(-5px); }
+}
+
+.hpbar {
+  position: relative; width: 380px; height: 25px; margin: 4px 0;
+  background: #1a0f0c; border: 2px solid #f2c14e88; border-radius: 14px; overflow: hidden;
+}
+.hpfill {
+  height: 100%; background: linear-gradient(90deg, #57b84c, #8fd14f);
+  transition: width 0.45s ease;
+}
+.hpbar.low .hpfill { background: linear-gradient(90deg, #c23b2e, #e86a4a); }
+.hptext {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; color: #fff; text-shadow: 0 1px 3px #000;
+}
+.hptext .icon { color: #ff7d6b; }
+
+.chips { display: flex; gap: 8px; min-height: 24px; }
+.chip {
+  font-size: 14px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+  background: #00000066; border: 1.5px solid;
+}
+.chip.block { color: #ffd97a; border-color: #ffd97a; }
+.chip.burn { color: #ff9a7a; border-color: #ff9a7a; }
+.chip.str { color: #d9b0ff; border-color: #d9b0ff; }
+
+.intent {
+  margin-top: 4px; display: inline-block; font-size: 15px; font-weight: 700;
+  padding: 4px 13px; border-radius: 8px; background: #571f1acc; border: 1.5px solid #ff8a70;
+  color: #ffd9cf;
+}
+.intent-block { background: #4d3a10cc; border-color: #ffd97a; color: #ffedbe; }
+.intent-heal { background: #173d1acc; border-color: #8fd14f; color: #d9ffc9; }
+.intent-scheme { background: #33194dcc; border-color: #b06ee8; color: #ecd9ff; }
+
+/* ---------- Stage ---------- */
+.stage {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; gap: 2px; min-height: 108px;
+}
+.stage-card { animation: slam 0.32s cubic-bezier(0.2, 1.6, 0.4, 1); filter: drop-shadow(0 14px 22px #000c); }
+@keyframes slam {
+  0% { transform: scale(1.45) rotate(-5deg); opacity: 0.4; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.log {
+  text-align: center; font-size: 13.5px; color: #bfae87; margin-top: 3px;
+  line-height: 1.45; font-style: italic;
+}
+
+/* ---------- Player ---------- */
+.player-zone { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.player-main { display: flex; align-items: center; gap: 20px; }
+.player-facts { min-width: 380px; }
+
+.hand-row {
+  display: flex; justify-content: center; align-items: flex-end;
+  min-height: 176px; padding-top: 8px;
+}
+.hand-slot {
+  margin: 0 -11px; transform: rotate(var(--tilt)) translateY(var(--lift));
+  transition: transform 0.16s ease; cursor: pointer; position: relative;
+}
+.hand-slot:hover { transform: rotate(0deg) translateY(-30px) scale(1.07); z-index: 5; }
+.empty-note { color: #9db894; font-style: italic; font-size: 15px; }
+
+.controls {
+  display: flex; align-items: center; gap: 26px; margin-top: 2px;
+}
+.energy { display: flex; align-items: center; gap: 4px; }
+.orb { color: #23404d; font-size: 24px; line-height: 1; }
+.orb .icon { width: 24px; height: 24px; }
+.orb.lit { color: #57d7f2; filter: drop-shadow(0 0 6px #57d7f2); }
+.energy-n { font-weight: 700; font-size: 16px; margin-left: 6px; }
+
+#end-turn {
+  font: inherit; font-size: 19px; font-weight: 800; letter-spacing: 0.03em;
+  color: #241a05; background: linear-gradient(#ffd97a, #e8a93d);
+  border: 2px solid #fff0c0; border-radius: 12px; padding: 10px 30px; cursor: pointer;
+  box-shadow: 0 5px 14px #000a;
+}
+#end-turn:hover:not(:disabled) { filter: brightness(1.08); }
+#end-turn:disabled { filter: grayscale(0.8) brightness(0.6); cursor: default; }
+
+/* ---------- Cards ---------- */
+.card {
+  width: 132px; height: 170px; border-radius: 13px; position: relative; flex: none;
+  background: linear-gradient(160deg, #fffaf0, #f1e2c4);
+  border: 3.5px solid var(--suit); color: #2a2016;
+  box-shadow: 0 8px 16px #0009;
+  display: flex; flex-direction: column; align-items: stretch;
+  padding: 7px 8px 8px;
+}
+.card.rare { box-shadow: 0 0 0 2px #f2c14e, 0 8px 18px #000a; }
+.card.playable { cursor: pointer; }
+.card.dim { filter: saturate(0.45) brightness(0.82); }
+
+.card .cost {
+  position: absolute; top: -9px; left: -9px; width: 34px; height: 34px; z-index: 2;
+  border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7fe3ff, #1c6f9e 70%);
+  border: 2px solid #dff6ff; color: #fff; font-weight: 900; font-size: 19px;
+  display: flex; align-items: center; justify-content: center;
+  text-shadow: 0 1px 2px #000; box-shadow: 0 3px 7px #0008;
+}
+.card-art {
+  height: 50px; border-radius: 8px; background: var(--suit-soft);
+  display: flex; align-items: center; justify-content: center; color: var(--suit);
+  margin-bottom: 5px;
+}
+.card-art .icon { width: 42px; height: 42px; }
+
+.card-name {
+  font-family: Palatino, "Palatino Linotype", Georgia, serif;
+  font-weight: 700; font-size: 16.5px; text-align: center; line-height: 1.12;
+}
+.card-suit { text-align: center; font-size: 11.5px; font-weight: 700; color: var(--suit); letter-spacing: 0.05em; }
+.card-text { font-size: 12px; line-height: 1.32; text-align: center; color: #4a3a24; margin-top: 3px; }
+
+.cardback {
+  width: 40px; height: 56px; border-radius: 7px; flex: none;
+  background:
+    radial-gradient(circle at 50% 42%, #f2c14e33, transparent 60%),
+    repeating-linear-gradient(45deg, #5d2320 0 6px, #53201d 6px 12px);
+  border: 2.5px solid #f2c14e; color: #f2c14e;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 9px #0009;
+}
+.cardback .icon { width: 20px; height: 20px; }
+
+/* ---------- Floaters ---------- */
+.floaters { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.floater {
+  position: absolute; font-size: 30px; font-weight: 900; z-index: 40;
+  text-shadow: 0 2px 0 #000, 0 0 14px #0009;
+  animation: floatUp 1.25s ease-out forwards;
+}
+.floater.foe { top: 24%; }
+.floater.player { top: 58%; }
+.floater.dmg { color: #ff6b52; }
+.floater.blk { color: #ffd97a; font-size: 23px; }
+.floater.heal { color: #8fe36a; font-size: 25px; }
+.floater.brn { color: #c99aff; font-size: 23px; }
+.floater.str { color: #7fe3ff; font-size: 21px; }
+@keyframes floatUp {
+  0% { transform: translateY(8px) scale(0.7); opacity: 0; }
+  18% { transform: translateY(0) scale(1.15); opacity: 1; }
+  100% { transform: translateY(-64px) scale(1); opacity: 0; }
+}
+
+/* ---------- Screens ---------- */
+.screen {
+  position: absolute; inset: 0; z-index: 50;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 14px; padding: 30px;
+  background: linear-gradient(rgba(4, 10, 6, 0.9), rgba(4, 10, 6, 0.95));
+  backdrop-filter: blur(3px);
+}
+.screen h1 {
+  font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: 84px; line-height: 0.98; letter-spacing: 0.06em; color: #f2c14e;
+  text-shadow: 0 4px 0 #7a5410, 0 10px 34px #000;
+}
+.end-screen.defeat h1 { color: #b9c4ce; text-shadow: 0 4px 0 #3c4a55, 0 10px 34px #000; }
+.logo-runes { display: flex; gap: 14px; }
+.logo-runes .icon { width: 44px; height: 44px; }
+.logo-runes .icon:nth-child(1) { color: #ff5a3c; }
+.logo-runes .icon:nth-child(2) { color: #f2b63d; }
+.logo-runes .icon:nth-child(3) { color: #3fa9f5; }
+.logo-runes .icon:nth-child(4) { color: #b06ee8; }
+.end-sigil .icon { width: 64px; height: 64px; color: #f2c14e; }
+.end-screen.defeat .end-sigil .icon { color: #8fa3b3; }
+.tagline { font-size: 19px; line-height: 1.5; color: #efe3c2; }
+.howto { font-size: 14.5px; line-height: 1.6; color: #bfae87; }
+.end-stats { display: flex; gap: 34px; font-size: 18px; }
+.end-stats b { color: #f2c14e; font-size: 24px; }
+.big-btn {
+  font: inherit; font-size: 23px; font-weight: 800; letter-spacing: 0.04em;
+  color: #241a05; background: linear-gradient(#ffd97a, #e8a93d);
+  border: 2.5px solid #fff0c0; border-radius: 14px; padding: 13px 42px; cursor: pointer;
+  box-shadow: 0 8px 22px #000b; margin-top: 6px;
+}
+.big-btn:hover { filter: brightness(1.09); transform: translateY(-1px); }
